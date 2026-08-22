@@ -6,7 +6,7 @@
 <title>고객발송 매물 목록</title>
 <meta property="og:title" content="파크리오 평형별 매물 목록 (고객발송)" />
 <meta property="og:description" content="평형을 선택해서 카카오톡으로 바로 공유할 수 있습니다." />
-<meta property="og:image" content="https://realtysongjw-cyber.github.io/park-rio-message/thumbnail.png" />
+<meta property="og:image" content="https://realtysongjw-cyber.github.io/park-rio-message/thumbnail.png?v=2" />
 <style>
   body { font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; margin: 0; padding: 20px; background: #f5f6f8; color: #1a1a1a; }
   .wrap { max-width: 640px; margin: 0 auto; }
@@ -20,6 +20,8 @@
   .kakaoShareBtn { background: #FEE500; color: #191919; }
   .copyBtn { background: #7a4a1f; color: #fff; }
   .note { font-size: 12px; color: #888; margin-top: 14px; }
+  .backLink { display: inline-block; margin-bottom: 12px; font-size: 13px; color: #7a4a1f; text-decoration: none; }
+  .backLink:hover { text-decoration: underline; }
   #sections { min-height: 40px; }
 </style>
 </head>
@@ -38,6 +40,7 @@
 
     var SHEET_ID = '1Gw6Ivd8hajxg8o2UGizKPD-JvMCA74ws8q87jkLpnQ8';
     var TAB_NAME = '고객발송 미리보기';
+    var THUMBNAIL_URL = 'https://realtysongjw-cyber.github.io/park-rio-message/thumbnail.png?v=2';
 
     function parseCSV(text) {
       var rows = [];
@@ -85,70 +88,86 @@
       return title.replace(/[^\w가-힣]+/g, '-');
     }
 
-    function renderSections(blocks) {
-      var container = document.getElementById('sections');
-      container.innerHTML = '';
-      blocks.forEach(function (msg, idx) {
-        var firstLine = msg.split('\n')[0].trim();
-        var slug = slugify(firstLine) + '-' + idx;
+    function slugFor(msg, idx) {
+      var firstLine = msg.split('\n')[0].trim();
+      return slugify(firstLine) + '-' + idx;
+    }
 
-        var section = document.createElement('div');
-        section.className = 'section';
-        section.id = slug;
+    function buildSection(msg, idx, allBlocks) {
+      var firstLine = msg.split('\n')[0].trim();
+      var slug = slugFor(msg, idx);
 
-        var h2 = document.createElement('h2');
-        h2.textContent = firstLine;
-        section.appendChild(h2);
+      var section = document.createElement('div');
+      section.className = 'section';
+      section.id = slug;
 
-        var btnRow = document.createElement('div');
-        btnRow.className = 'btnrow';
+      var h2 = document.createElement('h2');
+      h2.textContent = firstLine;
+      section.appendChild(h2);
 
-        var shareBtn = document.createElement('button');
-        shareBtn.className = 'kakaoShareBtn';
-        shareBtn.textContent = '카카오톡으로 공유하기';
-        shareBtn.addEventListener('click', function () {
-          var pageUrl = window.location.href.split('#')[0] + '#' + slug;
-          Kakao.Share.sendDefault({
-            objectType: 'feed',
-            content: {
-              title: firstLine,
-              description: '탭하면 전체 매물 목록을 확인할 수 있습니다.',
-              imageUrl: 'https://realtysongjw-cyber.github.io/park-rio-message/thumbnail.png',
-              link: { mobileWebUrl: pageUrl, webUrl: pageUrl }
-            },
-            buttons: [
-              { title: '전체 매물 보기', link: { mobileWebUrl: pageUrl, webUrl: pageUrl } }
-            ]
-          });
+      var btnRow = document.createElement('div');
+      btnRow.className = 'btnrow';
+
+      var shareBtn = document.createElement('button');
+      shareBtn.className = 'kakaoShareBtn';
+      shareBtn.textContent = '카카오톡으로 공유하기';
+      shareBtn.addEventListener('click', function () {
+        var pageUrl = window.location.href.split('#')[0] + '#' + slug;
+        Kakao.Share.sendDefault({
+          objectType: 'feed',
+          content: {
+            title: firstLine,
+            description: '탭하면 이 평형의 전체 매물 목록만 확인할 수 있습니다.',
+            imageUrl: THUMBNAIL_URL,
+            link: { mobileWebUrl: pageUrl, webUrl: pageUrl }
+          },
+          buttons: [
+            { title: '전체 매물 보기', link: { mobileWebUrl: pageUrl, webUrl: pageUrl } }
+          ]
         });
-
-        var copyBtn = document.createElement('button');
-        copyBtn.className = 'copyBtn';
-        copyBtn.textContent = '전체 텍스트 복사';
-        copyBtn.addEventListener('click', function () {
-          navigator.clipboard.writeText(msg).then(function () {
-            alert('복사되었습니다.');
-          }).catch(function () {
-            alert('복사에 실패했습니다. 직접 선택해서 복사해주세요.');
-          });
-        });
-
-        btnRow.appendChild(shareBtn);
-        btnRow.appendChild(copyBtn);
-        section.appendChild(btnRow);
-
-        var pre = document.createElement('pre');
-        pre.textContent = msg;
-        section.appendChild(pre);
-
-        container.appendChild(section);
       });
 
-      // If the page was opened with a #anchor (from a shared card), scroll to it.
-      if (window.location.hash) {
-        var target = document.getElementById(window.location.hash.slice(1));
-        if (target) target.scrollIntoView({ behavior: 'smooth' });
+      var copyBtn = document.createElement('button');
+      copyBtn.className = 'copyBtn';
+      copyBtn.textContent = '전체 텍스트 복사';
+      copyBtn.addEventListener('click', function () {
+        navigator.clipboard.writeText(msg).then(function () {
+          alert('복사되었습니다.');
+        }).catch(function () {
+          alert('복사에 실패했습니다. 직접 선택해서 복사해주세요.');
+        });
+      });
+
+      btnRow.appendChild(shareBtn);
+      btnRow.appendChild(copyBtn);
+      section.appendChild(btnRow);
+
+      var pre = document.createElement('pre');
+      pre.textContent = msg;
+      section.appendChild(pre);
+
+      return section;
+    }
+
+    // singleIdx >= 0 이면 그 평형 하나만 렌더링 (카톡에서 공유 링크를 눌러 들어온 경우).
+    // singleIdx < 0 이면 5개 평형 전체를 렌더링 (원본 허브 페이지).
+    function renderSections(blocks, singleIdx) {
+      var container = document.getElementById('sections');
+      container.innerHTML = '';
+
+      if (singleIdx >= 0) {
+        var back = document.createElement('a');
+        back.className = 'backLink';
+        back.href = window.location.href.split('#')[0];
+        back.textContent = '← 전체 평형 목록 보기';
+        container.appendChild(back);
+        container.appendChild(buildSection(blocks[singleIdx], singleIdx, blocks));
+        return;
       }
+
+      blocks.forEach(function (msg, idx) {
+        container.appendChild(buildSection(msg, idx, blocks));
+      });
     }
 
     var csvUrl = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID +
@@ -160,9 +179,20 @@
         var rows = parseCSV(csvText);
         var blocks = findAllMessageBlocks(rows);
         if (!blocks.length) throw new Error('메시지 블록을 찾지 못함');
-        renderSections(blocks);
+
+        var hash = window.location.hash ? window.location.hash.slice(1) : '';
+        var singleIdx = -1;
+        if (hash) {
+          for (var i = 0; i < blocks.length; i++) {
+            if (slugFor(blocks[i], i) === hash) { singleIdx = i; break; }
+          }
+        }
+
+        renderSections(blocks, singleIdx);
         document.getElementById('statusNote').textContent =
-          '방금 구글시트에서 최신 내용을 불러왔습니다 (평형 ' + blocks.length + '개).';
+          singleIdx >= 0
+            ? '방금 구글시트에서 최신 내용을 불러왔습니다.'
+            : '방금 구글시트에서 최신 내용을 불러왔습니다 (평형 ' + blocks.length + '개).';
       })
       .catch(function (err) {
         document.getElementById('sections').innerHTML =
