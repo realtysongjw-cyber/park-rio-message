@@ -28,9 +28,9 @@
 </head>
 <body>
   <div class="wrap">
-    <span class="badge">고객발송용</span>
+    <span class="badge">실시간 매물 안내</span>
     <h1>파크리오 평형별 매물 목록</h1>
-    <p style="font-size:13px;color:#666;margin:4px 0 0;">공동중개 부동산명이 표시되지 않는 버전입니다. 원하는 평형만 골라서 공유하세요.</p>
+    <p style="font-size:13px;color:#666;margin:4px 0 0;" id="introText">현재 매매 가능한 파크리오 매물 목록입니다. 평형을 선택해 확인하세요.</p>
     <p class="asOfDate" id="asOfDate"></p>
     <div id="sections"><p class="note">최신 매물 목록을 불러오는 중...</p></div>
     <p class="note" id="statusNote"></p>
@@ -54,7 +54,7 @@
     var KST_DATE_STR = getKSTDateStr();
     (function () {
       var el = document.getElementById('asOfDate');
-      if (el) el.textContent = '📅 정보 기준일: ' + KST_DATE_STR + ' (조회 시점 · 구글시트 최신 반영)';
+      if (el) el.textContent = '📅 정보 기준일: ' + KST_DATE_STR;
     })();
 
     var SHEET_ID = '1Gw6Ivd8hajxg8o2UGizKPD-JvMCA74ws8q87jkLpnQ8';
@@ -234,6 +234,14 @@
         }
 
         renderSections(blocks, singleIdx);
+
+        var introEl = document.getElementById('introText');
+        if (introEl) {
+          introEl.textContent = singleIdx >= 0
+            ? '현재 매매 가능한 파크리오 매물 목록입니다.'
+            : '현재 매매 가능한 파크리오 매물 목록입니다. 평형을 선택해 확인하세요.';
+        }
+
         document.getElementById('statusNote').textContent =
           singleIdx >= 0
             ? '방금 구글시트에서 최신 내용을 불러왔습니다.'
