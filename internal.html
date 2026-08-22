@@ -180,7 +180,7 @@
         var blocks = findAllMessageBlocks(rows);
         if (!blocks.length) throw new Error('메시지 블록을 찾지 못함');
 
-        var hash = window.location.hash ? window.location.hash.slice(1) : '';
+        var hash = window.location.hash ? decodeURIComponent(window.location.hash.slice(1)) : '';
         var singleIdx = -1;
         if (hash) {
           for (var i = 0; i < blocks.length; i++) {
