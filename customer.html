@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>고객발송 매물 목록</title>
+<meta property="og:title" content="[파크리오 32/33평 전체 매물 목록]" />
+<meta property="og:description" content="세 안고 3건 · 입주 15건 — 눌러서 전체 목록 보기" />
+<meta property="og:image" content="https://realtysongjw-cyber.github.io/park-rio-message/thumbnail.png" />
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; margin: 0; padding: 20px; background: #f5f6f8; color: #1a1a1a; }
+  .wrap { max-width: 640px; margin: 0 auto; }
+  h1 { font-size: 18px; margin: 0 0 12px; }
+  .badge { display: inline-block; background: #7a4a1f; color: #fff; font-size: 12px; padding: 3px 9px; border-radius: 999px; margin-bottom: 10px; }
+  pre { white-space: pre-wrap; word-break: break-word; background: #fff; border: 1px solid #e2e4e8; border-radius: 10px; padding: 16px; font-size: 15px; line-height: 1.6; }
+  .btnrow { display: flex; gap: 8px; margin: 14px 0; flex-wrap: wrap; }
+  button { flex: 1; min-width: 140px; font-size: 15px; font-weight: 600; padding: 13px 16px; border-radius: 10px; border: none; cursor: pointer; }
+  #kakaoShareBtn { background: #FEE500; color: #191919; }
+  #copyBtn { background: #7a4a1f; color: #fff; }
+  .note { font-size: 12px; color: #888; margin-top: 10px; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <span class="badge">고객발송용</span>
+    <h1>공동중개 부동산명이 표시되지 않는 버전입니다</h1>
+    <div class="btnrow">
+      <button id="kakaoShareBtn">카카오톡으로 공유하기</button>
+      <button id="copyBtn">전체 텍스트 복사</button>
+    </div>
+    <pre id="msgBody">[파크리오 32/33평 전체 매물 목록]
+■ 세 안고(갭투자)
+• 308동 202호 (확장) | 29억 / 전세 9억 (~27/3)
+• 229동 504호 (확장) | 29.5억 / 전세 9.5억 (~27/2)
+• 217동 901호 (확장) | 29.5억 / 전세 10.5억 (~28/2)
+■ 입주
+• 216동 102호 (확장) | 30억
+• 210동 101호 (확장) | 30억
+• 226동 2904호 (확장) | 30억
+• 228동 1004호 (확장) | 30억 - 금액조정 가능
+• 229동 1503호 (확장) | 30억
+• 311동 1404호 (확장) | 30억
+• 216동 2802호 (기본) | 30억
+• 308동 2701호 (기본) | 30억
+• 314동 2804호 (확장(특인테리어)) | 30.2억
+• 226동 1703호 (기본) | 30.5억
+• 304동 2204호 (확장) | 31억
+• 217동 1701호 (확장) | 31억
+• 304동 3501호 (확장) | 31억
+• 228동 2304호 (확장) | 31억
+• 310동 1704호 (기본) | 31억</pre>
+    <p class="note" id="statusNote">최신 매물 목록을 불러오는 중...</p>
+  </div>
+
+  <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.8.2/kakao.min.js"></script>
+  <script>
+    Kakao.init('3f031e1a7cab4b798d1e87c5d49e0d74');
+
+    var SHEET_ID = '1Gw6Ivd8hajxg8o2UGizKPD-JvMCA74ws8q87jkLpnQ8';
+    var TAB_NAME = '고객발송 미리보기';
+    var currentTitle = '[파크리오 32/33평 전체 매물 목록]';
+
+    function parseCSV(text) {
+      var rows = [];
+      var row = [];
+      var field = '';
+      var inQuotes = false;
+      for (var i = 0; i < text.length; i++) {
+        var c = text[i];
+        if (inQuotes) {
+          if (c === '"') {
+            if (text[i + 1] === '"') { field += '"'; i++; }
+            else { inQuotes = false; }
+          } else {
+            field += c;
+          }
+        } else {
+          if (c === '"') { inQuotes = true; }
+          else if (c === ',') { row.push(field); field = ''; }
+          else if (c === '\n') { row.push(field); rows.push(row); row = []; field = ''; }
+          else if (c === '\r') { /* skip */ }
+          else { field += c; }
+        }
+      }
+      if (field.length || row.length) { row.push(field); rows.push(row); }
+      return rows;
+    }
+
+    function findMessageCell(rows) {
+      for (var r = 0; r < rows.length; r++) {
+        for (var c = 0; c < rows[r].length; c++) {
+          var v = (rows[r][c] || '').trim();
+          if (v.indexOf('[') === 0 && v.indexOf('•') !== -1) return v;
+        }
+      }
+      return null;
+    }
+
+    var csvUrl = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID +
+      '/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent(TAB_NAME);
+
+    fetch(csvUrl)
+      .then(function (res) { if (!res.ok) throw new Error('HTTP ' + res.status); return res.text(); })
+      .then(function (csvText) {
+        var rows = parseCSV(csvText);
+        var msg = findMessageCell(rows);
+        if (!msg) throw new Error('메시지 셀을 찾지 못함');
+        document.getElementById('msgBody').textContent = msg;
+        var firstLine = msg.split('\n')[0].trim();
+        if (firstLine) currentTitle = firstLine;
+        document.getElementById('statusNote').textContent = '방금 구글시트에서 최신 내용을 불러왔습니다.';
+      })
+      .catch(function (err) {
+        document.getElementById('statusNote').textContent =
+          '최신 내용을 불러오지 못해 마지막으로 저장된 내용을 보여주고 있습니다. (' + err.message + ')';
+      });
+
+    document.getElementById('kakaoShareBtn').addEventListener('click', function () {
+      var pageUrl = window.location.href.split('#')[0];
+      Kakao.Share.sendDefault({
+        objectType: 'feed',
+        content: {
+          title: currentTitle,
+          description: '탭하면 전체 매물 목록을 확인할 수 있습니다.',
+          imageUrl: 'https://realtysongjw-cyber.github.io/park-rio-message/thumbnail.png',
+          link: { mobileWebUrl: pageUrl, webUrl: pageUrl }
+        },
+        buttons: [
+          { title: '전체 매물 보기', link: { mobileWebUrl: pageUrl, webUrl: pageUrl } }
+        ]
+      });
+    });
+
+    document.getElementById('copyBtn').addEventListener('click', function () {
+      var text = document.getElementById('msgBody').innerText;
+      navigator.clipboard.writeText(text).then(function () {
+        alert('복사되었습니다.');
+      }).catch(function () {
+        alert('복사에 실패했습니다. 직접 선택해서 복사해주세요.');
+      });
+    });
+  </script>
+</body>
+</html>
