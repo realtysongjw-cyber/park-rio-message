@@ -6,7 +6,7 @@
 <title>내부공유 매물 목록</title>
 <meta property="og:title" content="파크리오 평형별 매물 목록 (내부공유)" />
 <meta property="og:description" content="평형을 선택해서 카카오톡으로 바로 공유할 수 있습니다." />
-<meta property="og:image" content="https://realtysongjw-cyber.github.io/park-rio-message/thumbnail.png?v=3" />
+<meta property="og:image" content="https://realtysongjw-cyber.github.io/park-rio-message/thumbnail-internal.png?v=2" />
 <style>
   body { font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; margin: 0; padding: 20px; background: #f5f6f8; color: #1a1a1a; }
   .wrap { max-width: 640px; margin: 0 auto; }
@@ -60,15 +60,17 @@
     var SHEET_ID = '1Gw6Ivd8hajxg8o2UGizKPD-JvMCA74ws8q87jkLpnQ8';
     var TAB_NAME = '내부공유 미리보기';
     var THUMBNAIL_BASE = 'https://realtysongjw-cyber.github.io/park-rio-message/';
-    var THUMBNAIL_URL = THUMBNAIL_BASE + 'thumbnail.png?v=3';
+    // 내부공유용은 고객발송용과 헷갈리지 않도록 색상/문구가 다른 전용 썸네일 세트를 씁니다
+    // (파란 톤 + 상단에 "내부공유용" 빨간 리본 표시).
+    var THUMBNAIL_URL = THUMBNAIL_BASE + 'thumbnail-internal.png?v=2';
 
     // 평형별로 미리 만들어둔 전용 썸네일이 있으면 그걸 쓰고, 없으면 공용 썸네일로 대체.
     function pickThumbnail(title) {
-      if (title.indexOf('16평') !== -1) return THUMBNAIL_BASE + 'thumbnail-16.png?v=2';
-      if (title.indexOf('26평') !== -1) return THUMBNAIL_BASE + 'thumbnail-26.png?v=2';
-      if (title.indexOf('32') !== -1 || title.indexOf('33') !== -1) return THUMBNAIL_BASE + 'thumbnail-32-33.png?v=2';
-      if (title.indexOf('45평') !== -1) return THUMBNAIL_BASE + 'thumbnail-45.png?v=2';
-      if (title.indexOf('52평') !== -1) return THUMBNAIL_BASE + 'thumbnail-52.png?v=2';
+      if (title.indexOf('16평') !== -1) return THUMBNAIL_BASE + 'thumbnail-internal-16.png?v=2';
+      if (title.indexOf('26평') !== -1) return THUMBNAIL_BASE + 'thumbnail-internal-26.png?v=2';
+      if (title.indexOf('32') !== -1 || title.indexOf('33') !== -1) return THUMBNAIL_BASE + 'thumbnail-internal-32-33.png?v=2';
+      if (title.indexOf('45평') !== -1) return THUMBNAIL_BASE + 'thumbnail-internal-45.png?v=2';
+      if (title.indexOf('52평') !== -1) return THUMBNAIL_BASE + 'thumbnail-internal-52.png?v=2';
       return THUMBNAIL_URL;
     }
 
