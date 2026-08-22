@@ -16,7 +16,7 @@
   .section h2 { font-size: 16px; margin: 0 0 10px; color: #1f4e78; }
   pre { white-space: pre; overflow-x: auto; -webkit-overflow-scrolling: touch; background: #f9fafb; border: 1px solid #eee; border-radius: 8px; padding: 12px; font-size: 14px; line-height: 1.8; margin: 10px 0; }
   .btnrow { display: flex; gap: 8px; flex-wrap: wrap; }
-  button { flex: 1; min-width: 130px; font-size: 14px; font-weight: 600; padding: 11px 14px; border-radius: 8px; border: none; cursor: pointer; }
+  button { flex: 1; min-width: 130px; font-size: 14px; font-weight: 600; padding: 11px 14px; border-radius: 8px; border: none; cursor: pointer; line-height: 1.4; }
   .kakaoShareBtn { background: #FEE500; color: #191919; }
   .copyBtn { background: #1f4e78; color: #fff; }
   .note { font-size: 12px; color: #888; margin-top: 14px; }
@@ -30,7 +30,7 @@
   <div class="wrap">
     <span class="badge">내부공유용</span>
     <h1>파크리오 평형별 매물 목록</h1>
-    <p style="font-size:13px;color:#666;margin:4px 0 0;">공동중개 부동산명이 포함된 버전입니다. 원하는 평형만 골라서 공유하세요.</p>
+    <p style="font-size:13px;color:#666;margin:4px 0 0;" id="introText">공동중개 부동산명이 포함된 버전입니다. 원하는 평형만 골라서 공유하세요.</p>
     <p class="asOfDate" id="asOfDate"></p>
     <div id="sections"><p class="note">최신 매물 목록을 불러오는 중...</p></div>
     <p class="note" id="statusNote"></p>
@@ -54,7 +54,7 @@
     var KST_DATE_STR = getKSTDateStr();
     (function () {
       var el = document.getElementById('asOfDate');
-      if (el) el.textContent = '📅 정보 기준일: ' + KST_DATE_STR + ' (조회 시점 · 구글시트 최신 반영)';
+      if (el) el.textContent = '📅 정보 기준일: ' + KST_DATE_STR;
     })();
 
     var SHEET_ID = '1Gw6Ivd8hajxg8o2UGizKPD-JvMCA74ws8q87jkLpnQ8';
@@ -144,7 +144,7 @@
 
       var shareBtn = document.createElement('button');
       shareBtn.className = 'kakaoShareBtn';
-      shareBtn.textContent = '카카오톡으로 공유하기';
+      shareBtn.innerHTML = '카카오톡으로<br>공유하기';
       shareBtn.addEventListener('click', function () {
         var base = window.location.href.split('#')[0].split('?')[0];
         var expiresAt = Date.now() + EXPIRE_HOURS * 60 * 60 * 1000;
@@ -234,6 +234,14 @@
         }
 
         renderSections(blocks, singleIdx);
+
+        var introEl = document.getElementById('introText');
+        if (introEl) {
+          introEl.textContent = singleIdx >= 0
+            ? '공동중개 부동산명이 포함된 매물 정보입니다.'
+            : '공동중개 부동산명이 포함된 버전입니다. 원하는 평형만 골라서 공유하세요.';
+        }
+
         document.getElementById('statusNote').textContent =
           singleIdx >= 0
             ? '방금 구글시트에서 최신 내용을 불러왔습니다.'
