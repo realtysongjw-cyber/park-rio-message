@@ -14,12 +14,13 @@
   .badge { display: inline-block; background: #7a4a1f; color: #fff; font-size: 12px; padding: 3px 9px; border-radius: 999px; margin-bottom: 10px; }
   .section { background: #fff; border: 1px solid #e2e4e8; border-radius: 12px; padding: 16px; margin-top: 16px; }
   .section h2 { font-size: 16px; margin: 0 0 10px; color: #7a4a1f; }
-  pre { white-space: pre-wrap; word-break: break-word; background: #f9fafb; border: 1px solid #eee; border-radius: 8px; padding: 12px; font-size: 14px; line-height: 1.6; margin: 10px 0; }
+  pre { white-space: pre; overflow-x: auto; -webkit-overflow-scrolling: touch; background: #f9fafb; border: 1px solid #eee; border-radius: 8px; padding: 12px; font-size: 14px; line-height: 1.8; margin: 10px 0; }
   .btnrow { display: flex; gap: 8px; flex-wrap: wrap; }
   button { flex: 1; min-width: 130px; font-size: 14px; font-weight: 600; padding: 11px 14px; border-radius: 8px; border: none; cursor: pointer; }
   .kakaoShareBtn { background: #FEE500; color: #191919; }
   .copyBtn { background: #7a4a1f; color: #fff; }
   .note { font-size: 12px; color: #888; margin-top: 14px; }
+  .asOfDate { display: inline-block; font-size: 12px; font-weight: 600; color: #7a4a1f; background: #f3e9dd; border-radius: 999px; padding: 4px 12px; margin-top: 8px; }
   .backLink { display: inline-block; margin-bottom: 12px; font-size: 13px; color: #7a4a1f; text-decoration: none; }
   .backLink:hover { text-decoration: underline; }
   #sections { min-height: 40px; }
@@ -30,6 +31,7 @@
     <span class="badge">고객발송용</span>
     <h1>파크리오 평형별 매물 목록</h1>
     <p style="font-size:13px;color:#666;margin:4px 0 0;">공동중개 부동산명이 표시되지 않는 버전입니다. 원하는 평형만 골라서 공유하세요.</p>
+    <p class="asOfDate" id="asOfDate"></p>
     <div id="sections"><p class="note">최신 매물 목록을 불러오는 중...</p></div>
     <p class="note" id="statusNote"></p>
   </div>
@@ -37,6 +39,18 @@
   <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.8.2/kakao.min.js"></script>
   <script>
     Kakao.init('3f031e1a7cab4b798d1e87c5d49e0d74');
+
+    // 이 페이지는 열 때마다 구글시트 최신 내용을 불러오므로, "정보 기준일"은
+    // 지금 이 페이지를 보고 있는 시점(한국시간)의 날짜입니다.
+    (function () {
+      var now = new Date();
+      var kst = new Date(now.getTime() + (9 * 60 - now.getTimezoneOffset()) * 60000);
+      var y = kst.getFullYear();
+      var m = kst.getMonth() + 1;
+      var d = kst.getDate();
+      var el = document.getElementById('asOfDate');
+      if (el) el.textContent = '📅 정보 기준일: ' + y + '년 ' + m + '월 ' + d + '일 (조회 시점 · 구글시트 최신 반영)';
+    })();
 
     var SHEET_ID = '1Gw6Ivd8hajxg8o2UGizKPD-JvMCA74ws8q87jkLpnQ8';
     var TAB_NAME = '고객발송 미리보기';
