@@ -6,7 +6,7 @@
 <title>고객발송 매물 목록</title>
 <meta property="og:title" content="파크리오 평형별 매물 목록 (고객발송)" />
 <meta property="og:description" content="평형을 선택해서 카카오톡으로 바로 공유할 수 있습니다." />
-<meta property="og:image" content="https://realtysongjw-cyber.github.io/park-rio-message/thumbnail.png?v=2" />
+<meta property="og:image" content="https://realtysongjw-cyber.github.io/park-rio-message/thumbnail.png?v=3" />
 <style>
   body { font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; margin: 0; padding: 20px; background: #f5f6f8; color: #1a1a1a; }
   .wrap { max-width: 640px; margin: 0 auto; }
@@ -41,17 +41,21 @@
     var SHEET_ID = '1Gw6Ivd8hajxg8o2UGizKPD-JvMCA74ws8q87jkLpnQ8';
     var TAB_NAME = '고객발송 미리보기';
     var THUMBNAIL_BASE = 'https://realtysongjw-cyber.github.io/park-rio-message/';
-    var THUMBNAIL_URL = THUMBNAIL_BASE + 'thumbnail.png?v=2';
+    var THUMBNAIL_URL = THUMBNAIL_BASE + 'thumbnail.png?v=3';
 
     // 평형별로 미리 만들어둔 전용 썸네일이 있으면 그걸 쓰고, 없으면 공용 썸네일로 대체.
     function pickThumbnail(title) {
-      if (title.indexOf('16평') !== -1) return THUMBNAIL_BASE + 'thumbnail-16.png?v=1';
-      if (title.indexOf('26평') !== -1) return THUMBNAIL_BASE + 'thumbnail-26.png?v=1';
-      if (title.indexOf('32') !== -1 || title.indexOf('33') !== -1) return THUMBNAIL_BASE + 'thumbnail-32-33.png?v=1';
-      if (title.indexOf('45평') !== -1) return THUMBNAIL_BASE + 'thumbnail-45.png?v=1';
-      if (title.indexOf('52평') !== -1) return THUMBNAIL_BASE + 'thumbnail-52.png?v=1';
+      if (title.indexOf('16평') !== -1) return THUMBNAIL_BASE + 'thumbnail-16.png?v=2';
+      if (title.indexOf('26평') !== -1) return THUMBNAIL_BASE + 'thumbnail-26.png?v=2';
+      if (title.indexOf('32') !== -1 || title.indexOf('33') !== -1) return THUMBNAIL_BASE + 'thumbnail-32-33.png?v=2';
+      if (title.indexOf('45평') !== -1) return THUMBNAIL_BASE + 'thumbnail-45.png?v=2';
+      if (title.indexOf('52평') !== -1) return THUMBNAIL_BASE + 'thumbnail-52.png?v=2';
       return THUMBNAIL_URL;
     }
+
+    // 카카오톡 공유 버튼으로 만든 링크는 이 시간이 지나면 더 이상 열리지 않습니다.
+    // (이메일에 있는 원본 허브 링크에는 적용되지 않음 — 그 링크는 항상 열림)
+    var EXPIRE_HOURS = 48;
 
     function parseCSV(text) {
       var rows = [];
@@ -123,7 +127,9 @@
       shareBtn.className = 'kakaoShareBtn';
       shareBtn.textContent = '카카오톡으로 공유하기';
       shareBtn.addEventListener('click', function () {
-        var pageUrl = window.location.href.split('#')[0] + '#' + slug;
+        var base = window.location.href.split('#')[0].split('?')[0];
+        var expiresAt = Date.now() + EXPIRE_HOURS * 60 * 60 * 1000;
+        var pageUrl = base + '?exp=' + expiresAt + '#' + slug;
         Kakao.Share.sendDefault({
           objectType: 'feed',
           content: {
@@ -169,7 +175,7 @@
       if (singleIdx >= 0) {
         var back = document.createElement('a');
         back.className = 'backLink';
-        back.href = window.location.href.split('#')[0];
+        back.href = window.location.href.split('#')[0].split('?')[0];
         back.textContent = '← 전체 평형 목록 보기';
         container.appendChild(back);
         container.appendChild(buildSection(blocks[singleIdx], singleIdx, blocks));
@@ -180,6 +186,14 @@
         container.appendChild(buildSection(msg, idx, blocks));
       });
     }
+
+    // 공유 링크(?exp=...가 붙은 링크)가 만료되었으면 데이터를 불러오지 않고 바로 안내만 표시.
+    var expParam = new URLSearchParams(window.location.search).get('exp');
+    if (expParam && Date.now() > Number(expParam)) {
+      document.getElementById('sections').innerHTML =
+        '<p class="note">이 공유 링크는 만료되었습니다. 최신 매물 목록이 필요하시면 다시 공유를 요청해주세요.</p>';
+      document.getElementById('statusNote').textContent = '';
+    } else {
 
     var csvUrl = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID +
       '/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent(TAB_NAME);
@@ -209,6 +223,8 @@
         document.getElementById('sections').innerHTML =
           '<p class="note">최신 내용을 불러오지 못했습니다. (' + err.message + ')</p>';
       });
+
+    }
   </script>
 </body>
 </html>
