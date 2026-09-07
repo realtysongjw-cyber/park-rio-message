@@ -23,8 +23,10 @@
   .asOfDate { display: inline-block; font-size: 12px; font-weight: 600; color: #7a4a1f; background: #f3e9dd; border-radius: 999px; padding: 4px 12px; margin-top: 8px; }
   .backLink { display: inline-block; margin-bottom: 12px; font-size: 13px; color: #7a4a1f; text-decoration: none; }
   .backLink:hover { text-decoration: underline; }
-  .callBtnRow { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 14px; }
-  .callBtn { display: inline-block; background: #7a4a1f; color: #fff; text-decoration: none; font-size: 14px; font-weight: 600; padding: 11px 16px; border-radius: 8px; }
+  .callBtnRow { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-start; margin-top: 14px; }
+  .callBtn { display: inline-block; color: #fff; text-decoration: none; font-size: 14px; font-weight: 600; padding: 11px 16px; border-radius: 8px; }
+  .callBtn.seoul { background: #2e8b57; }
+  .callBtn.jamlaea { background: #b8860b; }
   #sections { min-height: 40px; }
 </style>
 </head>
@@ -217,10 +219,10 @@
     var expParam = new URLSearchParams(window.location.search).get('exp');
     if (expParam && Date.now() > Number(expParam)) {
       document.getElementById('sections').innerHTML =
-        '<p class="note">이 링크는 일정 시간이 지나 만료되었습니다.<br>최신 매물 정보는 잠래아진주부동산에 문의해주세요.</p>' +
+        '<p class="note">이 링크는 일정 시간이 지나 만료되었습니다.<br>최신 매물 정보는 서울부동산이나 잠래아진주부동산에 문의해주세요.</p>' +
         '<div class="callBtnRow">' +
-        '<a class="callBtn" href="tel:01096088816">📞 서울부동산 010-9608-8816</a>' +
-        '<a class="callBtn" href="tel:01057094268">📞 잠래아진주부동산 010-5709-4268</a>' +
+        '<a class="callBtn seoul" href="tel:01096088816">📞 서울부동산 010-9608-8816</a>' +
+        '<a class="callBtn jamlaea" href="tel:01057094268">📞 잠래아진주부동산 010-5709-4268</a>' +
         '</div>';
       document.getElementById('statusNote').textContent = '';
     } else {
