@@ -74,7 +74,7 @@
 
     // 카카오톡 공유 버튼으로 만든 링크는 이 시간이 지나면 더 이상 열리지 않습니다.
     // (이메일에 있는 원본 허브 링크에는 적용되지 않음 — 그 링크는 항상 열림)
-    var EXPIRE_HOURS = 1 / 60; // ⚠️ 테스트용 임시값(1분). 테스트 끝나면 48로 되돌릴 것.
+    var EXPIRE_HOURS = 48;
 
     function parseCSV(text) {
       var rows = [];
@@ -215,7 +215,7 @@
     var expParam = new URLSearchParams(window.location.search).get('exp');
     if (expParam && Date.now() > Number(expParam)) {
       document.getElementById('sections').innerHTML =
-        '<p class="note">이 공유 링크는 만료되었습니다. 최신 매물 목록이 필요하시면 다시 공유를 요청해주세요.</p>';
+        '<p class="note">이 링크는 일정 시간이 지나 만료되었습니다.<br>최신 매물 정보는 잠래아진주부동산에 문의해주세요.</p>';
       document.getElementById('statusNote').textContent = '';
     } else {
 

@@ -120,10 +120,13 @@
       return found;
     }
 
-    // 특이사항이 없어서 시트에서 "... 29억 - " 처럼 하이픈만 덩그러니 남는 줄 정리.
-    // 하이픈 뒤에 실제 내용(예: "금액조정 가능")이 있는 줄은 그대로 둔다.
+    // 특이사항이 없어서 시트에서 "... 29억 - " 또는 "... 29억 -  ▶ 담당자..." 처럼
+    // 하이픈만 덩그러니 남는 줄 정리. 하이픈 뒤에 실제 내용(예: "금액조정 가능")이
+    // 있는 줄은 그대로 둔다.
     function stripDanglingHyphen(text) {
-      return text.replace(/[ \t]-[ \t]*(없음)?[ \t]*$/gm, '');
+      var cleaned = text.replace(/[ \t]-[ \t]*(없음)?[ \t]*(?=▶)/g, ' ');
+      cleaned = cleaned.replace(/[ \t]-[ \t]*(없음)?[ \t]*$/gm, '');
+      return cleaned;
     }
 
     function slugify(title) {
@@ -219,7 +222,7 @@
     var expParam = new URLSearchParams(window.location.search).get('exp');
     if (expParam && Date.now() > Number(expParam)) {
       document.getElementById('sections').innerHTML =
-        '<p class="note">이 공유 링크는 만료되었습니다. 최신 매물 목록이 필요하시면 다시 공유를 요청해주세요.</p>';
+        '<p class="note">이 링크는 일정 시간이 지나 만료되었습니다.<br>최신 매물 정보는 잠래아진주부동산에 문의해주세요.</p>';
       document.getElementById('statusNote').textContent = '';
     } else {
 
