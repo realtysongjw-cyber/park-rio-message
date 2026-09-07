@@ -118,6 +118,12 @@
       return found;
     }
 
+    // 특이사항이 없어서 시트에서 "... 29억 - " 처럼 하이픈만 덩그러니 남는 줄 정리.
+    // 하이픈 뒤에 실제 내용(예: "금액조정 가능")이 있는 줄은 그대로 둔다.
+    function stripDanglingHyphen(text) {
+      return text.replace(/[ \t]-[ \t]*(없음)?[ \t]*$/gm, '');
+    }
+
     function slugify(title) {
       return title.replace(/[^\w가-힣]+/g, '-');
     }
@@ -222,7 +228,7 @@
       .then(function (res) { if (!res.ok) throw new Error('HTTP ' + res.status); return res.text(); })
       .then(function (csvText) {
         var rows = parseCSV(csvText);
-        var blocks = findAllMessageBlocks(rows);
+        var blocks = findAllMessageBlocks(rows).map(stripDanglingHyphen);
         if (!blocks.length) throw new Error('메시지 블록을 찾지 못함');
 
         var hash = window.location.hash ? decodeURIComponent(window.location.hash.slice(1)) : '';
