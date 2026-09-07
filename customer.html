@@ -74,7 +74,7 @@
 
     // 카카오톡 공유 버튼으로 만든 링크는 이 시간이 지나면 더 이상 열리지 않습니다.
     // (이메일에 있는 원본 허브 링크에는 적용되지 않음 — 그 링크는 항상 열림)
-    var EXPIRE_HOURS = 48;
+    var EXPIRE_HOURS = 1 / 60; // ⚠️ 테스트용 임시값(1분). 테스트 끝나면 48로 되돌릴 것.
 
     function parseCSV(text) {
       var rows = [];
@@ -118,10 +118,13 @@
       return found;
     }
 
-    // 특이사항이 없어서 시트에서 "... 29억 - " 처럼 하이픈만 덩그러니 남는 줄 정리.
-    // 하이픈 뒤에 실제 내용(예: "금액조정 가능")이 있는 줄은 그대로 둔다.
+    // 특이사항이 없어서 시트에서 "... 29억 - " 또는 "... 29억 -  ▶ 담당자..." 처럼
+    // 하이픈만 덩그러니 남는 줄 정리. 하이픈 뒤에 실제 내용(예: "금액조정 가능")이
+    // 있는 줄은 그대로 둔다.
     function stripDanglingHyphen(text) {
-      return text.replace(/[ \t]-[ \t]*(없음)?[ \t]*$/gm, '');
+      var cleaned = text.replace(/[ \t]-[ \t]*(없음)?[ \t]*(?=▶)/g, ' ');
+      cleaned = cleaned.replace(/[ \t]-[ \t]*(없음)?[ \t]*$/gm, '');
+      return cleaned;
     }
 
     function slugify(title) {
@@ -199,11 +202,6 @@
       container.innerHTML = '';
 
       if (singleIdx >= 0) {
-        var back = document.createElement('a');
-        back.className = 'backLink';
-        back.href = window.location.href.split('#')[0].split('?')[0];
-        back.textContent = '← 전체 평형 목록 보기';
-        container.appendChild(back);
         container.appendChild(buildSection(blocks[singleIdx], singleIdx, blocks));
         return;
       }
@@ -248,10 +246,7 @@
             : '현재 매매 가능한 파크리오 매물 목록입니다. 평형을 선택해 확인하세요.';
         }
 
-        document.getElementById('statusNote').textContent =
-          singleIdx >= 0
-            ? '방금 구글시트에서 최신 내용을 불러왔습니다.'
-            : '방금 구글시트에서 최신 내용을 불러왔습니다 (평형 ' + blocks.length + '개).';
+        document.getElementById('statusNote').textContent = '';
       })
       .catch(function (err) {
         document.getElementById('sections').innerHTML =
