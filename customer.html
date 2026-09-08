@@ -131,6 +131,13 @@
       return cleaned;
     }
 
+    // 고객발송용 페이지에서는 가격변동 이력("30.5억 → 28.5억")을 보여줄 필요가
+    // 없으므로 최종가만 남기고 "직전가 → " 부분은 지운다. (직전가 표기는 내부공유
+    // 페이지에서만, 실제 변동이 있었던 매물에 한해 유지)
+    function stripPriceHistory(text) {
+      return text.replace(/\d+(?:\.\d+)?\s*억\s*→\s*/g, '');
+    }
+
     // "■ 헤더" 소제목별로 묶여있는 ★/• 매물 줄들을, 소제목 구간은 그대로 두고
     // 그 안에서만 금액(매매가) 오름차순으로 재정렬한다.
     // "30.5억 → 28.5억"처럼 가격변경 표시가 있으면 화살표 뒤 최종가를 기준으로,
@@ -281,7 +288,7 @@
       .then(function (res) { if (!res.ok) throw new Error('HTTP ' + res.status); return res.text(); })
       .then(function (csvText) {
         var rows = parseCSV(csvText);
-        var blocks = findAllMessageBlocks(rows).map(stripDanglingHyphen).map(sortLinesByPrice);
+        var blocks = findAllMessageBlocks(rows).map(stripDanglingHyphen).map(stripPriceHistory).map(sortLinesByPrice);
         if (!blocks.length) throw new Error('메시지 블록을 찾지 못함');
 
         var hash = window.location.hash ? decodeURIComponent(window.location.hash.slice(1)) : '';
