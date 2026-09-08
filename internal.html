@@ -133,6 +133,53 @@
       return cleaned;
     }
 
+    // "■ 헤더" 소제목별로 묶여있는 ★/• 매물 줄들을, 소제목 구간은 그대로 두고
+    // 그 안에서만 금액(매매가) 오름차순으로 재정렬한다.
+    // "30.5억 → 28.5억"처럼 가격변경 표시가 있으면 화살표 뒤 최종가를 기준으로,
+    // "28.9억 / 전세 9억"처럼 슬래시가 있으면 슬래시 앞 매매가만 기준으로 삼는다.
+    function extractPriceForSort(line) {
+      var barIdx = line.indexOf('|');
+      if (barIdx === -1) return null;
+      var seg = line.slice(barIdx + 1);
+      var arrowIdx = seg.lastIndexOf('→');
+      if (arrowIdx !== -1) {
+        seg = seg.slice(arrowIdx + 1);
+      } else {
+        var slashIdx = seg.indexOf('/');
+        if (slashIdx !== -1) seg = seg.slice(0, slashIdx);
+      }
+      var m = seg.match(/(\d+(?:\.\d+)?)\s*억/);
+      return m ? parseFloat(m[1]) : null;
+    }
+
+    function sortLinesByPrice(text) {
+      var lines = text.split('\n');
+      var result = [];
+      var i = 0;
+      while (i < lines.length) {
+        var line = lines[i];
+        if (line.indexOf('★') === 0 || line.indexOf('•') === 0) {
+          var group = [];
+          while (i < lines.length && (lines[i].indexOf('★') === 0 || lines[i].indexOf('•') === 0)) {
+            group.push({ line: lines[i], price: extractPriceForSort(lines[i]), idx: group.length });
+            i++;
+          }
+          group.sort(function (a, b) {
+            if (a.price === null && b.price === null) return a.idx - b.idx;
+            if (a.price === null) return 1;
+            if (b.price === null) return -1;
+            if (a.price !== b.price) return a.price - b.price;
+            return a.idx - b.idx;
+          });
+          group.forEach(function (g) { result.push(g.line); });
+        } else {
+          result.push(line);
+          i++;
+        }
+      }
+      return result.join('\n');
+    }
+
     function slugify(title) {
       return title.replace(/[^\w가-힣]+/g, '-');
     }
@@ -241,7 +288,7 @@
       .then(function (res) { if (!res.ok) throw new Error('HTTP ' + res.status); return res.text(); })
       .then(function (csvText) {
         var rows = parseCSV(csvText);
-        var blocks = findAllMessageBlocks(rows).map(stripDanglingHyphen);
+        var blocks = findAllMessageBlocks(rows).map(stripDanglingHyphen).map(sortLinesByPrice);
         if (!blocks.length) throw new Error('메시지 블록을 찾지 못함');
 
         var hash = window.location.hash ? decodeURIComponent(window.location.hash.slice(1)) : '';
